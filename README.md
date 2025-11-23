@@ -6,7 +6,30 @@
 
 ## Setup
 (setup padrão com docker)
-(setup para dev)
+
+- Linux setup:
+```bash
+# Clone this repository
+git clone <repository-url>
+
+# Go to project dir
+cd library-manager
+
+# Create the virtual environment (make sure you have Python 3.13 installed)
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run docker services (make sure you have docker installed)
+docker compose -f services-compose.yml up -d
+
+# Run the API
+python -m app
+```
+
+> [Python 3.14](https://docs.python.org/3/whatsnew/3.14.html) is already out with features that were untested for this project, but it should be fine if you would like to use it.
 
 ## Decisões arquiteturais
 (link para adrs)
