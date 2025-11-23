@@ -1,14 +1,19 @@
 import sys
-from api.run import start_api
+
+import uvicorn
+
+from api.run import setup_api
 
 
 if __name__ == "__main__":
     # Grabs log level override option if set
-    log_level_override_option = ""
+    log_level_override = ""
     try:
         idx = sys.argv.index("--log-level")
-        log_level_override_option = sys.argv[idx + 1]
+        log_level_override = sys.argv[idx + 1]
     except (IndexError, ValueError):
         pass
 
-    start_api(log_level_override_option)
+    app = setup_api(log_level_override=log_level_override)
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
