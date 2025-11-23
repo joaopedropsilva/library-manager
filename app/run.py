@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from app.core.log import setup_logger
 
 
@@ -20,7 +21,15 @@ def start_api():
     from app.api.v1.routes import book
     from app.api.v1.routes import loan
 
-    app = FastAPI(title="library-manager")
+
+    @asynccontextmanager
+    async def lifespan(app):
+        logger.debug("Starting API dependencies")
+        yield
+        logger.debug("Deactivating API dependencies")
+
+
+    app = FastAPI(title="library-manager", lifespan=lifespan)
 
     logger.debug("Created FastAPI instance")
 
@@ -28,4 +37,4 @@ def start_api():
     app.include_router(book.router, prefix="/api/v1")
     app.include_router(loan.router, prefix="/api/v1")
 
-    uvicorn.run("app.run:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
