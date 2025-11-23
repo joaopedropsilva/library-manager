@@ -1,10 +1,12 @@
 import uuid
 import datetime
+from typing import List
 
 from sqlalchemy import String, DateTime, Uuid, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
+from app.db.models.author_book import author_book
 
 
 class Author(Base):
@@ -18,4 +20,9 @@ class Author(Base):
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now()
+    )
+
+    books: Mapped[List["Book"]] = relationship(
+        secondary=author_book,
+        back_populates="authors"
     )

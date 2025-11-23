@@ -6,6 +6,7 @@ from sqlalchemy import String, DateTime, Uuid, Text, Boolean, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
+from app.db.models.author_book import author_book
 
 
 class Book(Base):
@@ -31,3 +32,7 @@ class Book(Base):
     )
 
     loans: Mapped[List["Loan"]] = relationship(back_populates="book")
+    authors: Mapped[List["Author"]] = relationship(
+        secondary=author_book,
+        back_populates="books"
+    )
