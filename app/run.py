@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 
 
-app = FastAPI(title="btg-library")
+app = FastAPI(title="library-manager")
 
 
 def start_api():
