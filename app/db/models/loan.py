@@ -1,8 +1,8 @@
 import uuid
 import datetime
 
-from sqlalchemy import Float, DateTime, Uuid, Boolean, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Float, DateTime, Uuid, Boolean, func, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
 
@@ -26,3 +26,6 @@ class Loan(Base):
         server_default=func.now()
         onupdate=func.now()
     )
+
+    book_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("book.id"))
+    book: Mapped["Book"] = relationship(back_populates="loans")

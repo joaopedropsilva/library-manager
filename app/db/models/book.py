@@ -1,8 +1,9 @@
 import uuid
 import datetime
+from typing import List
 
 from sqlalchemy import String, DateTime, Uuid, Text, Boolean, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base
 
@@ -28,3 +29,5 @@ class Book(Base):
         server_default=func.now()
         onupdate=func.now()
     )
+
+    loans: Mapped[List["Loan"]] = relationship(back_populates="book")
