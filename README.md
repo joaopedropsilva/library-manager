@@ -31,5 +31,7 @@ python -m app
 
 > [Python 3.14](https://docs.python.org/3/whatsnew/3.14.html) is already out with features that were untested for this project, but it should be fine if you would like to use it.
 
-## Decisões arquiteturais
-(link para adrs)
+## Running application tests
+
+## Architectural decisions
+This project uses [Architectural Decision Records (ADRs)](https://adr.github.io/) to address the architectural choices made upon development, all ADRs elaborated are located at: [docs/adrs](./docs/adrs/adr.md).
