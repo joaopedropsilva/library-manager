@@ -5,8 +5,8 @@ from typing import List
 from sqlalchemy import String, DateTime, Uuid, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.models.base import Base
-from app.db.models.author_book import author_book
+from api.db.models.base import Base
+from api.db.models.author_book import author_book
 
 
 class Author(Base):

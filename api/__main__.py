@@ -1,4 +1,4 @@
-from app.run import start_api
+from api.run import start_api
 
 
 if __name__ == "__main__":

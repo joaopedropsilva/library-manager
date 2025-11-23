@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from app.core.log import setup_logger
+from api.core.log import setup_logger
 
 
 app = None
@@ -17,9 +17,9 @@ def start_api():
     import uvicorn
     from fastapi import FastAPI
 
-    from app.api.v1.routes import user
-    from app.api.v1.routes import book
-    from app.api.v1.routes import loan
+    from api.versions.v1.routes import user
+    from api.versions.v1.routes import book
+    from api.versions.v1.routes import loan
 
 
     @asynccontextmanager

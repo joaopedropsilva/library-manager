@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.db.models.base import Base
+from api.db.models.base import Base
 
 author_book = Table(
     "autor_book",

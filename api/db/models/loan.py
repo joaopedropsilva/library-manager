@@ -4,7 +4,7 @@ import datetime
 from sqlalchemy import Float, DateTime, Uuid, Boolean, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.models.base import Base
+from api.db.models.base import Base
 
 
 class Loan(Base):

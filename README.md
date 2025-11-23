@@ -26,7 +26,7 @@ pip install -r requirements.txt
 docker compose -f services-compose.yml up -d
 
 # Run the API
-python -m app
+python -m api
 ```
 
 > [Python 3.14](https://docs.python.org/3/whatsnew/3.14.html) is already out with features that were untested for this project, but it should be fine if you would like to use it.

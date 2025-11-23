@@ -5,7 +5,7 @@ from typing import List
 from sqlalchemy import String, Uuid, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.models.base import Base
+from api.db.models.base import Base
 
 
 class User(Base):
