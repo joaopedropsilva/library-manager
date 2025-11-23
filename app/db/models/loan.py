@@ -29,3 +29,5 @@ class Loan(Base):
 
     book_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("book.id"))
     book: Mapped["Book"] = relationship(back_populates="loans")
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
+    user: Mapped["User"] = relationship(back_populates="loans")
