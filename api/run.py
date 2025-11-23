@@ -5,8 +5,8 @@ from api.core.log import setup_logger
 app = None
 
 
-def start_api():
-    setup_logger()
+def start_api(log_level_override: str = ""):
+    setup_logger(log_level_override)
 
     import logging
     logger = logging.getLogger(__name__)
