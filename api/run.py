@@ -13,7 +13,7 @@ def setup_api(*, log_level_override: str = ""):
     # use the configured logger
     from fastapi import FastAPI
 
-    #from api.db.session import get_session
+    from api.db.session import setup_db
     from api.versions.v1.routes import user
     from api.versions.v1.routes import book
     from api.versions.v1.routes import loan
@@ -22,7 +22,7 @@ def setup_api(*, log_level_override: str = ""):
     @asynccontextmanager
     async def lifespan(app):
         logger.debug("Starting API dependencies")
-        #get_session()
+        setup_db()
         yield
         logger.debug("Deactivating API dependencies")
 
