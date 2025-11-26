@@ -19,6 +19,11 @@ class UserService:
     def __init__(self, session: Session):
         self._db = session
 
+    def get_all_users(self) -> list[User]:
+        stmt = select(User)
+
+        return self._db.scalars(stmt).all()
+
     def get_user_by_email(self, email: str) -> User:
         stmt = select(User).where(User.email == email)
 

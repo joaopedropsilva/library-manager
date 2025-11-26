@@ -2,10 +2,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.tests.integration.api import app
-from api.tests.integration.db import clear_db
 
 
 client = TestClient(app)
+
 
 @pytest.fixture
 def user():
@@ -17,12 +17,35 @@ def user():
     }
 
 
-def test_get_all_users():
-    response = client.get("/api/v1/users")
+def test_get_all_users_paginated(seed_db_with_users):
+    response = client.get("/api/v1/users/")
     assert response.status_code == 200
+    pagination_result = response.json()
+    assert "total_items" in pagination_result
+    assert "page_items" in pagination_result
+    assert "page" in pagination_result
+    assert "total_pages" in pagination_result
+    assert pagination_result["total_items"] == 0
 
-    users = response.json()
-    assert isinstance(users, list)
+    skip=-1
+    limit=5
+    response = client.get(f"/api/v1/users/?skip={skip}&limit={limit}")
+    assert response.status_code == 422
+    skip=0
+    limit=-1
+    response = client.get(f"/api/v1/users/?skip={skip}&limit={limit}")
+    assert response.status_code == 422
+
+    insert_amount = 20
+    seed_db_with_users(insert_amount)
+    skip=0
+    limit=5
+    page_expected = skip // limit + 1
+    response = client.get(f"/api/v1/users/?skip={skip}&limit={limit}")
+    pagination_result = response.json()
+    assert pagination_result["total_items"] == insert_amount
+    assert len(pagination_result["page_items"]) == limit
+    assert pagination_result["page"] == page_expected
 
 
 def test_create_user_successfully(user):
