@@ -26,9 +26,10 @@ def get_users(skip: Annotated[int, Query(title="Amount of users to skip", ge=0)]
 
 @router.post("/users/", status_code=status.HTTP_201_CREATED)
 def create_user(user: Annotated[dict, UserCreate],
-                service: Annotated[UserService, Depends(get_user_service)]):
+                service: Annotated[UserService, Depends(get_user_service)]) -> UserRead:
     try:
-        return service.create_user(user.name, user.phone, user.address, user.email)
+        user = service.create_user(user.name, user.phone, user.address, user.email)
+        return UserRead(**user.asdict())
     except UserCreationException as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

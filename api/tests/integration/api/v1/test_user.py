@@ -1,4 +1,5 @@
 import uuid
+import copy
 
 import pytest
 from fastapi.testclient import TestClient
@@ -60,50 +61,50 @@ def test_get_all_users_paginated(seed_db_with_users):
     assert pagination_result["page"] == page_expected
 
 
-def test_create_user_successfully(user):
-    response = client.post("/api/v1/users", json=user)
+def test_create_user(user):
+    response = client.post("/api/v1/users", json=user.model_dump())
     created_user = response.json()
     assert response.status_code == 201
-
-    assert created_user["name"] == user["name"]
-    assert created_user["phone"] == "tel:+55-19-99999-9999"
-    assert created_user["address"] == user["address"]
-    assert created_user["email"] == user["email"]
+    assert "id" in created_user
+    assert created_user["name"] == user.name
+    assert created_user["phone"] == user.phone
+    assert created_user["address"] == user.address
+    assert created_user["email"] == user.email
     assert "created_at" in created_user
     assert "updated_at" in created_user
 
+    user_create_schema = user.model_dump()
+    user_copy = copy.deepcopy(user_create_schema)
+    del user_copy["name"]
+    response = client.post("/api/v1/users", json=user_copy)
+    assert response.status_code == 422
 
-def _call_and_assert_endpoint_status(user, status):
-    response = client.post("/api/v1/users", json=user)
-    assert response.status_code == status
+    user_copy = copy.deepcopy(user_create_schema)
+    del user_copy["phone"]
+    response = client.post("/api/v1/users", json=user_copy)
+    assert response.status_code == 422
+
+    user_copy = copy.deepcopy(user_create_schema)
+    del user_copy["address"]
+    response = client.post("/api/v1/users", json=user_copy)
+    assert response.status_code == 422
+
+    user_copy = copy.deepcopy(user_create_schema)
+    del user_copy["email"]
+    response = client.post("/api/v1/users", json=user_copy)
+    assert response.status_code == 422
+
+    user_copy = copy.deepcopy(user_create_schema)
+    user_copy["email"] = "invalid"
+    response = client.post("/api/v1/users", json=user_copy)
+    assert response.status_code == 422
 
 
-def test_create_user_missing_email(user):
-    del user["email"]
-    _call_and_assert_endpoint_status(user, 422)
-
-
-def test_create_user_missing_name(user):
-    del user["name"]
-    _call_and_assert_endpoint_status(user, 422)
-
-
-def test_create_user_missing_phone(user):
-    del user["phone"]
-    _call_and_assert_endpoint_status(user, 422)
-
-
-def test_create_user_missing_address(user):
-    del user["address"]
-    _call_and_assert_endpoint_status(user, 422)
-
-
-def test_create_user_invalid_email(user):
-    user["email"] = "invalid"
-    _call_and_assert_endpoint_status(user, 422)
-
-def test_create_user_check_already_exists(user):
-    _call_and_assert_endpoint_status(user, 201)
-
-    response = client.post("/api/v1/users", json=user)
+def test_create_user_already_exists(create_valid_user):
+    user_read = create_valid_user()
+    user_create = user_read.model_dump()
+    del user_create["id"]
+    del user_create["created_at"]
+    del user_create["updated_at"]
+    response = client.post("/api/v1/users", json=user_create)
     assert response.status_code == 409
