@@ -32,31 +32,53 @@ def db_session():
     return next(db_session_override())
 
 
-def _user_seeder(db_session, amount):
-    names = ["John", "Hugo", "Michele", "Nelson"]
-    addresses = ["777 Fort Al St.- 85", "231 Reed St.- 22333", "255 Lincoln - 2"]
-    email_mask = "example_{eid}@email.com"
+@pytest.fixture
+def seed_db_with_users(db_session):
+    def _user_seeder(db_session, amount):
+        names = ["John", "Hugo", "Michele", "Nelson"]
+        addresses = ["777 Fort Al St.- 85", "231 Reed St.- 22333", "255 Lincoln - 2"]
+        email_mask = "example_{eid}@email.com"
 
-    def _gen_phone():
-        phone_mask = f"+55XXXXXXXXXXX"
-        return "".join(
-            str(random.randint(0, 9)) if ch == "X" else ch
-            for ch in phone_mask
-        )
+        def _gen_phone():
+            phone_mask = f"+55XXXXXXXXXXX"
+            return "".join(
+                str(random.randint(0, 9)) if ch == "X" else ch
+                for ch in phone_mask
+            )
 
-    users = []
-    for i in range(amount):
-        eid = str(uuid.uuid4()).split("-")[0]
-        email = email_mask.format(eid=eid)
-        users.append(User(name=random.choice(names),
-                          phone=_gen_phone(),
-                          address= random.choice(addresses),
-                          email=email))
+        users = []
+        for i in range(amount):
+            eid = str(uuid.uuid4()).split("-")[0]
+            email = email_mask.format(eid=eid)
+            users.append(User(name=random.choice(names),
+                              phone=_gen_phone(),
+                              address=random.choice(addresses),
+                              email=email))
 
-    db_session.add_all(users)
-    db_session.commit()
+        db_session.add_all(users)
+        db_session.commit()
+
+    return functools.partial(_user_seeder, db_session)
 
 
 @pytest.fixture
-def seed_db_with_users(db_session):
-    return functools.partial(_user_seeder, db_session)
+def user():
+    return {
+        "name": "John",
+        "phone": "+5519999999999",
+        "address": "255 Lincoln Av.",
+        "email": "john@doe.com"
+    }
+
+
+@pytest.fixture
+def create_valid_user(db_session, user):
+    def _create_valid():
+        user_model = User(**user)
+        db_session.add(user_model)
+        db_session.commit()
+        db_session.refresh(user_model)
+
+        return user_model
+
+    return _create_valid

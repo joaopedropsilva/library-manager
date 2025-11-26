@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
@@ -15,6 +17,11 @@ class UserAlreadyExistsException(Exception):
         super().__init__(f"User already exists")
 
 
+class UserNotFoundException(Exception):
+    def __init__(self, message: str = ""):
+        super().__init__(f"User not found")
+
+
 class UserService:
     def __init__(self, session: Session):
         self._db = session
@@ -23,6 +30,19 @@ class UserService:
         stmt = select(User)
 
         return self._db.scalars(stmt).all()
+
+    def get_user_by_id(self, user_id: str) -> User:
+        try:
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            raise UserNotFoundException()
+
+        stmt = select(User).where(User.id == user_uuid)
+        user = self._db.scalars(stmt).first()
+        if not user:
+            raise UserNotFoundException()
+
+        return user
 
     def get_user_by_email(self, email: str) -> User:
         stmt = select(User).where(User.email == email)

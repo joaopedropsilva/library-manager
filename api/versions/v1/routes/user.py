@@ -4,7 +4,10 @@ from fastapi import \
     APIRouter, Depends, status, HTTPException, Query
 
 from api.services.user import \
-    UserService, UserCreationException, UserAlreadyExistsException
+    UserService, \
+    UserCreationException, \
+    UserAlreadyExistsException, \
+    UserNotFoundException
 from api.versions.v1.schema.user import UserCreate, UserRead
 from api.versions.v1.dependencies.user import get_user_service
 from api.services.pagination import paginate_response, MemoryPaginatedResponse
@@ -13,7 +16,7 @@ from api.services.pagination import paginate_response, MemoryPaginatedResponse
 router = APIRouter()
 
 
-@router.get("/users/")
+@router.get("/users/", status_code=status.HTTP_200_OK)
 def get_users(skip: Annotated[int, Query(title="Amount of users to skip", ge=0)] = 0,
               limit: Annotated[int, Query(title="Amount of users to get", ge=0, le=100)] = 10,
               service: Annotated[UserService, Depends(get_user_service)] = None) -> MemoryPaginatedResponse:
@@ -36,6 +39,10 @@ def create_user(user: Annotated[dict, UserCreate],
             detail=str(err))
 
 
-@router.get("/users/{user_id}")
-def get_user(user_id: str):
-    return {"name": "John"}
+@router.get("/users/{user_id}", status_code=status.HTTP_200_OK)
+def get_user(user_id: str, service: Annotated[str, Depends(get_user_service)]) -> UserRead:
+    try:
+        user = service.get_user_by_id(user_id)
+        return UserRead(**user.asdict())
+    except UserNotFoundException:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -7,14 +9,24 @@ from api.tests.integration.api import app
 client = TestClient(app)
 
 
-@pytest.fixture
-def user():
-    return {
-        "name": "John",
-        "phone": "+5519999999999",
-        "address": "255 Lincoln Av.",
-        "email": "john@doe.com"
-    }
+def test_get_user_by_id(create_valid_user):
+    response = client.get("/api/v1/users/invalid")
+    assert response.status_code == 404
+
+    response = client.get(f"/api/v1/users/{uuid.uuid4()}")
+    assert response.status_code == 404
+
+    created_user = create_valid_user()
+    response = client.get(f"/api/v1/users/{created_user.id}")
+    user = response.json()
+    assert response.status_code == 200
+    assert user["id"] == str(created_user.id)
+    assert user["name"] == created_user.name
+    assert user["phone"] == created_user.phone
+    assert user["address"] == created_user.address
+    assert user["email"] == created_user.email
+    assert "created_at" in user
+    assert "updated_at" in user
 
 
 def test_get_all_users_paginated(seed_db_with_users):
