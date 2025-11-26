@@ -27,3 +27,4 @@ def get_session() -> Generator[Session, None, None]:
         except SQLAlchemyError:
             logger.exception(f"Failed on database operation")
             session.rollback()
+            raise

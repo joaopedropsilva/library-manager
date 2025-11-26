@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, HTTPException
 
-from api.services.user import UserService, UserCreationException
+from api.services.user import \
+    UserService, UserCreationException, UserAlreadyExistsException
 from api.versions.v1.schema.user import UserCreate
 from api.versions.v1.dependencies.user import get_user_service
 
@@ -23,7 +24,11 @@ def create_user(user: Annotated[dict, UserCreate],
     except UserCreationException as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=repr(err))
+            detail=str(err))
+    except UserAlreadyExistsException as err:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(err))
 
 
 @router.get("/users/{user_id}")

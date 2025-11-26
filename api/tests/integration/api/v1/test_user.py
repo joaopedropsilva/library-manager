@@ -66,3 +66,9 @@ def test_create_user_missing_address(user):
 def test_create_user_invalid_email(user):
     user["email"] = "invalid"
     _call_and_assert_endpoint_status(user, 422)
+
+def test_create_user_check_already_exists(user):
+    _call_and_assert_endpoint_status(user, 201)
+
+    response = client.post("/api/v1/users", json=user)
+    assert response.status_code == 409
