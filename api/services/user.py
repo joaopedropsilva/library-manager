@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -7,9 +8,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from api.db.models.user import User
 
 
+logger = logging.getLogger(__name__)
+
+
 class UserCreationException(Exception):
-    def __init__(self, message: str):
-        super().__init__(f"Failed to create user: {message}")
+    def __init__(self, message: str = ""):
+        super().__init__(f"Failed to create user")
 
 
 class UserAlreadyExistsException(Exception):
@@ -59,7 +63,8 @@ class UserService:
             self._db.add(user)
             self._db.commit()
             self._db.refresh(user)
-        except SQLAlchemyError as err:
-            raise UserCreationException(err)
+        except SQLAlchemyError:
+            logger.exception("Database failed to create user")
+            raise UserCreationException()
 
         return user

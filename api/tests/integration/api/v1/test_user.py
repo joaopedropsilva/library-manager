@@ -10,6 +10,7 @@ from api.tests.integration.api import app
 client = TestClient(app)
 
 
+@pytest.mark.user
 def test_get_user_by_id(create_valid_user):
     response = client.get("/api/v1/users/invalid")
     assert response.status_code == 404
@@ -30,6 +31,7 @@ def test_get_user_by_id(create_valid_user):
     assert "updated_at" in user
 
 
+@pytest.mark.user
 def test_get_all_users_paginated(seed_db_with_users):
     response = client.get("/api/v1/users/")
     assert response.status_code == 200
@@ -61,6 +63,7 @@ def test_get_all_users_paginated(seed_db_with_users):
     assert pagination_result["page"] == page_expected
 
 
+@pytest.mark.user
 def test_create_user(user):
     response = client.post("/api/v1/users", json=user.model_dump())
     created_user = response.json()
@@ -100,6 +103,7 @@ def test_create_user(user):
     assert response.status_code == 422
 
 
+@pytest.mark.user
 def test_create_user_already_exists(create_valid_user):
     user_read = create_valid_user()
     user_create = user_read.model_dump()
