@@ -55,7 +55,7 @@ def test_get_all_users_paginated(seed_db_with_users):
     seed_db_with_users(insert_amount)
     skip=0
     limit=5
-    page_expected = skip // limit + 1
+    page_expected = skip // limit
     response = client.get(f"/api/v1/users/?skip={skip}&limit={limit}")
     pagination_result = response.json()
     assert pagination_result["total_items"] == insert_amount

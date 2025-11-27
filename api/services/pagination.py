@@ -15,6 +15,6 @@ def paginate_response(items: list[Any], skip: int, limit: int) -> MemoryPaginate
     return MemoryPaginatedResponse(
         total_items=len(items),
         page_items=items[skip:skip + limit],
-        page=skip // limit + 1,
+        page=skip // limit,
         total_pages=math.ceil(len(items) / limit)
     )
