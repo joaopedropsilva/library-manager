@@ -8,8 +8,18 @@ client = TestClient(app)
 
 
 @pytest.mark.book
+def test_get_book_by_isbn(book, create_book):
+    response = client.get("/api/v1/books/invalid")
+    assert response.status_code == 422
+
+    create_book()
+    response = client.get(f"/api/v1/books/{book.isbn}")
+    assert response.status_code == 200
+
+
+@pytest.mark.book
 def test_create_book(book):
-    response = client.post("/api/v1/book", json=book.model_dump())
+    response = client.post("/api/v1/books", json=book.model_dump())
     created_book = response.json()
     assert response.status_code == 201
     assert "id" in created_book
@@ -46,8 +56,8 @@ def test_create_book(book):
 
 
 @pytest.mark.book
-def test_create_book_already_exists(create_valid_book):
-    book_read = create_valid_book()
+def test_create_book_already_exists(create_book):
+    book_read = create_book()
     book_create = book_read.model_dump()
     del book_create["id"]
     del book_create["created_at"]

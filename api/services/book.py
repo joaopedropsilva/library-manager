@@ -47,19 +47,16 @@ class BookService:
         if not book:
             raise BookNotFoundException()
 
-        return book
-
     def get_book_by_isbn(self, isbn: str) -> Book:
         stmt = select(Book).where(Book.isbn == isbn)
-
         return self._db.scalars(stmt).first()
 
     def create_book(self,
                     title: str,
                     publisher: str,
                     isbn: str,
-                    synopsis: str,
                     category: str,
+                    synopsis: str,
                     authors: list[Author]) -> Book:
         book = self.get_book_by_isbn(isbn)
         if book:
@@ -69,8 +66,8 @@ class BookService:
             book = Book(title=title,
                         publisher=publisher,
                         isbn=isbn,
-                        synopsis=synopsis,
                         category=category,
+                        synopsis=synopsis,
                         authors=authors)
             self._db.add(book)
             self._db.commit()

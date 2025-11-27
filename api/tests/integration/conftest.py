@@ -153,7 +153,7 @@ def book() -> BookCreate:
 
 
 @pytest.fixture
-def create_valid_book(db_session, book) -> BookRead:
+def create_book(db_session, book) -> BookRead:
     # create author here
     create_fn = functools.partial(_create_valid,
                                   db_session,

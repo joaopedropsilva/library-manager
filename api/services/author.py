@@ -79,4 +79,8 @@ class AuthorService:
 
         stmt = select(Author).where(Author.id.in_(normalized_author_ids))
 
-        return self._db.scalars(stmt).all()
+        authors = self._db.scalars(stmt).all()
+        if not authors:
+            raise AuthorNotFoundException()
+
+        return authors

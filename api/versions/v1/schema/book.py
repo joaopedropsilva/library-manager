@@ -19,4 +19,4 @@ class BookRead(BookCreate):
     is_available: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    author_names: list[str] | None = []
+    author_names: list[str]
