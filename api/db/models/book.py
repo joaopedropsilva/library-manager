@@ -12,7 +12,7 @@ from api.db.models.author_book import author_book
 class Book(Base):
     __tablename__ = "book"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4())
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(150), nullable=False)
     isbn: Mapped[str] = mapped_column(String(13), unique=True)
     publisher: Mapped[str] = mapped_column(String(80), nullable=False)
