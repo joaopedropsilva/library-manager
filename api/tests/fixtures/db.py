@@ -2,7 +2,7 @@ from typing import Generator
 
 import pytest
 
-from api.tests.integration.db import db_eng, Base, db_session_override
+from api.tests.db import db_eng, Base, db_session_override
 
 
 @pytest.fixture(scope="session")

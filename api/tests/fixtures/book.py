@@ -1,11 +1,10 @@
 import random
-import functools
 
 import pytest
 
 from api.versions.v1.schema.book import BookCreate, BookRead
 from api.versions.v1.schema.author import AuthorCreate
-from api.tests.integration.db import Book, Author
+from api.tests.db import Book, Author
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@ import uuid
 import pytest
 
 from api.versions.v1.schema.user import UserCreate, UserRead
-from api.tests.integration.db import User
+from api.tests.db import User
 
 
 @pytest.fixture
