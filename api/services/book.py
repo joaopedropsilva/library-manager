@@ -41,6 +41,22 @@ class BookService:
         stmt = select(Book)
         return self._db.scalars(stmt).all()
 
+    def get_if_book_available(self, book_id: str) -> Book:
+        try:
+            book_uuid = uuid.UUID(book_id)
+        except ValueError:
+            raise InvalidIdException()
+
+        stmt = select(Book).where(Book.id == book_uuid)
+        book = self._db.scalars(stmt).first()
+        if not book:
+            raise BookNotFoundException()
+
+        if not book.is_available:
+            raise BookUnavailableException()
+
+        return book
+
     def get_book_by_isbn(self, isbn: str) -> Book:
         stmt = select(Book).where(Book.isbn == isbn)
         book = self._db.scalars(stmt).first()

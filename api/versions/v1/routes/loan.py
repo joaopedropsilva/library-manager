@@ -1,34 +1,68 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import \
+    APIRouter, Depends, status, HTTPException, Query, Path
+
+from api.core.exceptions import UserMaxLoansExceededException, InvalidIdException
+from api.services.loan import \
+    LoanService, LoanCreationException, LoanNotFoundException, LoanReturnProcessException
+from api.services.user import UserService, UserNotFoundException
+from api.services.book import \
+        BookService, BookNotFoundException, BookUnavailableException
+from api.versions.v1.schema.loan import LoanCreate, LoanRead
+from api.versions.v1.dependencies.user import get_user_service
+from api.versions.v1.dependencies.book import get_book_service
+from api.versions.v1.dependencies.loan import get_loan_service
+from api.services.pagination import paginate_response, MemoryPaginatedResponse
 
 
 router = APIRouter()
 
 
-@router.get("/loans/{user_id}")
-def get_loans_by_user(user_id: str):
-    return []
+@router.get("/loans/", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
+def get_loans(skip: Annotated[int, Query(description="Amount of loans to skip", ge=0)] = 0,
+              limit: Annotated[int, Query(description="Amount of lonas to get", ge=0, le=100)] = 10,
+              active: Annotated[bool, Query(description="Lists only active loans")] = True,
+              overdue: Annotated[bool, Query(description="Lists only overdue loans")] = False,
+              service: Annotated[LoanService, Depends(get_loan_service)] = None) -> MemoryPaginatedResponse:
+    loan_reads = [LoanRead(**loan.asdict()) for loan in service.get_all_loans(active, overdue)]
+    return paginate_response(loan_reads, skip, limit)
 
 
-@router.get("/loans/history/{user_id}")
-def get_loan_history_by_user(user_id: str):
-    return []
+@router.post("/loans/", status_code=status.HTTP_201_CREATED, response_model=LoanRead)
+def create_loan(loan: LoanCreate,
+                user_service: Annotated[UserService, Depends(get_user_service)],
+                book_service: Annotated[BookService, Depends(get_book_service)],
+                loan_service: Annotated[LoanService, Depends(get_loan_service)]) -> LoanRead:
+    try:
+        book = book_service.get_if_book_available(loan.user_id)
+    except BookNotFoundException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
+    except BookUnavailableException as err:
+        raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=err)
+
+    try:
+        user = user_service.get_user_by_id(loan.user_id)
+        loan_service.check_if_max_loans_exceeded(user)
+    except UserNotFoundException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
+    except UserMaxLoansExceededException as err:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=err)
+
+    try:
+        created_loan = loan_service.create_loan(user, book)
+        return LoanRead(**created_loan.asdict())
+    except LoanCreationException as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=err)
 
 
-@router.get("/loans/active/")
-def get_active_loans():
-    return []
-
-
-@router.get("/loans/overdue/")
-def get_overdue_loans():
-    return []
-
-
-@router.post("/loans/")
-def create_loan():
-    return ""
-
-
-@router.post("/loans/return/{loan_id}")
-def process_loan_return_with_fine(loand_id: str):
-    return ""
+@router.post("/loans/return/{loan_id}", status_code=status.HTTP_200_OK, response_model=LoanRead)
+def process_loan_return_with_fine(loan_id: Annotated[str, Path(description="Loan unique identifier (UUID4)")],
+                                  service: Annotated[LoanService, Depends(get_loan_service)]) -> LoanRead:
+    try:
+        loan_processed = service.process_loan_return(loan_id)
+        return LoanRead(**loan_processed.asdict())
+    except LoanReturnProcessException as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=err)
+    except InvalidIdException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)

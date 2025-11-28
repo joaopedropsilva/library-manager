@@ -6,7 +6,7 @@
 - OpenAPI/Swagger documented;
 - Robust model validation with Pydantic;
 - Automatic database migrations with Alembic;
-- Configurable to debug operations logger.
+- Configurable logger to debug operations.
 
 ## Setup (linux only)
 

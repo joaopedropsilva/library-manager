@@ -4,6 +4,7 @@ from fastapi import \
     APIRouter, Depends, status, HTTPException, Query, Path
 
 from api.core.exceptions import InvalidIdException
+from api.services.loan import LoanService
 from api.services.user import \
     UserService, \
     UserCreationException, \
@@ -11,7 +12,9 @@ from api.services.user import \
     UserNotFoundException
 from api.services.pagination import paginate_response, MemoryPaginatedResponse
 from api.versions.v1.schema.user import UserCreate, UserRead
+from api.versions.v1.schema.loan import LoanRead
 from api.versions.v1.dependencies.user import get_user_service
+from api.versions.v1.dependencies.loan import get_loan_service
 
 
 router = APIRouter()
@@ -45,5 +48,27 @@ def get_user(user_id: Annotated[str, Path(description="User unique identifier (U
         return UserRead(**user.asdict())
     except UserNotFoundException as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+    except InvalidIdException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+
+
+@router.get("/users/loans/{user_id}", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
+def get_loan_history_by_user(user_id: Annotated[str, Path(description="User unique identifier (UUID4)")],
+                             skip: Annotated[int, Query(description="Amount of loans to skip", ge=0)] = 0,
+                             limit: Annotated[int, Query(description="Amount of loans to get", ge=0, le=100)] = 10,
+                             loan_service: Annotated[LoanService, Depends(get_loan_service)] = None) -> MemoryPaginatedResponse:
+    try:
+        loan_reads = [LoanRead(**loan.asdict()) for loan in loan_service.get_loans_by_user(user_id)]
+        return paginate_response(loan_reads, skip, limit)
+    except InvalidIdException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+@router.get("/users/loans/{user_id}", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
+def get_loan_history_by_user(user_id: Annotated[str, Path(description="User unique identifier (UUID4)")],
+                             skip: Annotated[int, Query(description="Amount of loans to skip", ge=0)] = 0,
+                             limit: Annotated[int, Query(description="Amount of loans to get", ge=0, le=100)] = 10,
+                             loan_service: Annotated[LoanService, Depends(get_loan_service)] = None) -> MemoryPaginatedResponse:
+    try:
+        loan_reads = [LoanRead(**loan.asdict()) for loan in loan_service.get_loans_by_user(user_id)]
+        return paginate_response(loan_reads, skip, limit)
     except InvalidIdException as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))

@@ -10,7 +10,7 @@ from api.db.models.base import Base
 class Loan(Base):
     __tablename__ = "loan"
 
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4())
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     due_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     return_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
