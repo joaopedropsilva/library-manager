@@ -1,7 +1,7 @@
 # library-manager
 
 ## Features
-- All endpoints with robust integration testing with Pytest;
+- Endpoints with robust integration testing with Pytest;
 - Easy to use docker based environment;
 - OpenAPI/Swagger documented;
 - Robust model validation with Pydantic;

@@ -4,7 +4,7 @@ from fastapi import \
     APIRouter, Depends, status, HTTPException, Query, Path
 
 from api.core.exceptions import InvalidIdException
-from api.services.loan import LoanService
+from api.services.loan import LoanService, LoanNotFoundException
 from api.services.user import \
     UserService, \
     UserCreationException, \
@@ -62,13 +62,5 @@ def get_loan_history_by_user(user_id: Annotated[str, Path(description="User uniq
         return paginate_response(loan_reads, skip, limit)
     except InvalidIdException as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-@router.get("/users/loans/{user_id}", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
-def get_loan_history_by_user(user_id: Annotated[str, Path(description="User unique identifier (UUID4)")],
-                             skip: Annotated[int, Query(description="Amount of loans to skip", ge=0)] = 0,
-                             limit: Annotated[int, Query(description="Amount of loans to get", ge=0, le=100)] = 10,
-                             loan_service: Annotated[LoanService, Depends(get_loan_service)] = None) -> MemoryPaginatedResponse:
-    try:
-        loan_reads = [LoanRead(**loan.asdict()) for loan in loan_service.get_loans_by_user(user_id)]
-        return paginate_response(loan_reads, skip, limit)
-    except InvalidIdException as err:
+    except LoanNotFoundException as err:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))

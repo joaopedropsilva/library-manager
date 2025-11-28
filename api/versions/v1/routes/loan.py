@@ -21,7 +21,7 @@ router = APIRouter()
 
 @router.get("/loans/", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
 def get_loans(skip: Annotated[int, Query(description="Amount of loans to skip", ge=0)] = 0,
-              limit: Annotated[int, Query(description="Amount of lonas to get", ge=0, le=100)] = 10,
+              limit: Annotated[int, Query(description="Amount of loans to get", ge=0, le=100)] = 10,
               active: Annotated[bool, Query(description="Lists only active loans")] = True,
               overdue: Annotated[bool, Query(description="Lists only overdue loans")] = False,
               service: Annotated[LoanService, Depends(get_loan_service)] = None) -> MemoryPaginatedResponse:
@@ -35,25 +35,25 @@ def create_loan(loan: LoanCreate,
                 book_service: Annotated[BookService, Depends(get_book_service)],
                 loan_service: Annotated[LoanService, Depends(get_loan_service)]) -> LoanRead:
     try:
-        book = book_service.get_if_book_available(loan.user_id)
+        book = book_service.get_if_book_available(str(loan.book_id))
     except BookNotFoundException as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
     except BookUnavailableException as err:
-        raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=err)
+        raise HTTPException(status_code=status.HTTP_423_LOCKED, detail=str(err))
 
     try:
-        user = user_service.get_user_by_id(loan.user_id)
+        user = user_service.get_user_by_id(str(loan.user_id))
         loan_service.check_if_max_loans_exceeded(user)
     except UserNotFoundException as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
     except UserMaxLoansExceededException as err:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=err)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(err))
 
     try:
-        created_loan = loan_service.create_loan(user, book)
+        created_loan = loan_service.create_loan(book, user)
         return LoanRead(**created_loan.asdict())
     except LoanCreationException as err:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=err)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
 
 
 @router.post("/loans/return/{loan_id}", status_code=status.HTTP_200_OK, response_model=LoanRead)
@@ -62,7 +62,9 @@ def process_loan_return_with_fine(loan_id: Annotated[str, Path(description="Loan
     try:
         loan_processed = service.process_loan_return(loan_id)
         return LoanRead(**loan_processed.asdict())
+    except LoanNotFoundException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
     except LoanReturnProcessException as err:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=err)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
     except InvalidIdException as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
