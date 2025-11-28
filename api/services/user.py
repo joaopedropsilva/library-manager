@@ -32,7 +32,6 @@ class UserService:
 
     def get_all_users(self) -> list[User]:
         stmt = select(User)
-
         return self._db.scalars(stmt).all()
 
     def get_user_by_id(self, user_id: str) -> User:
@@ -48,13 +47,9 @@ class UserService:
 
         return user
 
-    def get_user_by_email(self, email: str) -> User:
-        stmt = select(User).where(User.email == email)
-
-        return self._db.scalars(stmt).first()
-
     def create_user(self, name: str, phone: str, address: str, email: str) -> User:
-        user = self.get_user_by_email(email)
+        stmt = select(User).where(User.email == email)
+        user = self._db.scalars(stmt).first()
         if user:
             raise UserAlreadyExistsException()
 

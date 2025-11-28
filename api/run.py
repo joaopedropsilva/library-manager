@@ -13,11 +13,27 @@ def setup_api(*, log_level_override: str = ""):
     # use the configured logger
     from fastapi import FastAPI
 
+    from api.core.config import settings 
     from api.versions.v1.routes import user
     from api.versions.v1.routes import book
     from api.versions.v1.routes import loan
 
-    app = FastAPI(title="library-manager")
+    app = FastAPI(title=settings.api_title,
+                  description=settings.api_desc,
+                  version=settings.api_version,
+                  openapi_tags=[
+                      {
+                          "name": "Users",
+                          "description": "Operations related to user accounts."
+                      },
+                      {
+                          "name": "Books",
+                          "description": "Book related endpoints."
+                      },
+                      {
+                          "name": "Loans",
+                          "description": "Book loans related endpoints."
+                      }])
 
     logger.debug("Created FastAPI instance")
 
@@ -28,7 +44,7 @@ def setup_api(*, log_level_override: str = ""):
 
     @app.get("/")
     async def root_route():
-        return {"msg": "Hello from library-manager"}
+        return {"msg": f"Hello from {settings.api_title}"}
 
 
     return app

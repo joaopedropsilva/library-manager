@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import \
-    APIRouter, Depends, status, HTTPException, Query
+    APIRouter, Depends, status, HTTPException, Query, Path
 
 from api.services.user import \
     UserService, \
@@ -16,15 +16,15 @@ from api.services.pagination import paginate_response, MemoryPaginatedResponse
 router = APIRouter()
 
 
-@router.get("/users/", status_code=status.HTTP_200_OK)
-def get_users(skip: Annotated[int, Query(title="Amount of users to skip", ge=0)] = 0,
-              limit: Annotated[int, Query(title="Amount of users to get", ge=0, le=100)] = 10,
+@router.get("/users/", status_code=status.HTTP_200_OK, response_model=MemoryPaginatedResponse)
+def get_users(skip: Annotated[int, Query(description="Amount of users to skip", ge=0)] = 0,
+              limit: Annotated[int, Query(description="Amount of users to get", ge=0, le=100)] = 10,
               service: Annotated[UserService, Depends(get_user_service)] = None) -> MemoryPaginatedResponse:
     users = [UserRead(**user.asdict()) for user in service.get_all_users()]
     return paginate_response(users, skip, limit)
 
 
-@router.post("/users/", status_code=status.HTTP_201_CREATED)
+@router.post("/users/", status_code=status.HTTP_201_CREATED, response_model=UserRead)
 def create_user(user: UserCreate,
                 service: Annotated[UserService, Depends(get_user_service)]) -> UserRead:
     try:
@@ -36,8 +36,9 @@ def create_user(user: UserCreate,
         raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
 
-@router.get("/users/{user_id}", status_code=status.HTTP_200_OK)
-def get_user(user_id: str, service: Annotated[str, Depends(get_user_service)]) -> UserRead:
+@router.get("/users/{user_id}", status_code=status.HTTP_200_OK, response_model=UserRead)
+def get_user(user_id: Annotated[str, Path(description="User unique identifier (UUID4)")],
+             service: Annotated[str, Depends(get_user_service)]) -> UserRead:
     try:
         user = service.get_user_by_id(user_id)
         return UserRead(**user.asdict())

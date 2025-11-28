@@ -1,8 +1,12 @@
 # library-manager
-(descrever brevemente a aplicação mencionando a stack utilizada)
 
 ## Features
-(utilizar collapsing por feature para conter os exemplos)
+- All endpoints with robust integration testing with Pytest;
+- Easy to use docker based environment;
+- OpenAPI/Swagger documented;
+- Robust model validation with Pydantic;
+- Automatic database migrations with Alembic;
+- Configurable to debug operations logger.
 
 ## Setup
 - Docker setup
