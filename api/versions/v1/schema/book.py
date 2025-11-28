@@ -15,9 +15,46 @@ class BookCreate(BaseModel):
     synopsis: str | None
     authors: list[AuthorCreate] = Field(min_length=1)
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "Harry Potter",
+                "publisher": "Bloomsbury Publishing",
+                "isbn": "9788532511010",
+                "category": "fiction",
+                "is_available": True,
+                "synopsis": "The book synopsis",
+                "authors": [{
+                    "name": "J. K. Rowling",
+                    "description": "The author description",
+                }]
+            }
+        }
+    }
+
 
 class BookRead(BookCreate):
     id: uuid.UUID
     is_available: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": "292ada19-6b06-44f7-a20e-dc6687668b0e",
+                "title": "Harry Potter",
+                "publisher": "Bloomsbury Publishing",
+                "isbn": "9788532511010",
+                "category": "fiction",
+                "is_available": True,
+                "synopsis": "The book synopsis",
+                "authors": [{
+                    "name": "J. K. Rowling",
+                    "description": "The author description",
+                }],
+                "created_at": "2025-11-28T05:34:46.963Z",
+                "updated_at": "2025-11-28T05:34:46.963Z"
+            }
+        }
+    }
