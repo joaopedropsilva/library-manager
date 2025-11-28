@@ -8,8 +8,8 @@
 - Automatic database migrations with Alembic;
 - Configurable to debug operations logger.
 
-## Setup
-- Docker setup
+## Setup (linux only)
+
 ```bash
 # Clone this repository
 git clone <repository-url>
@@ -26,28 +26,6 @@ pip install -r requirements.txt
 
 # Run docker database service (make sure you have docker installed)
 docker compose up -d
-
-# Run database migrations
-alembic upgrade head
-```
-
-- Linux development setup:
-```bash
-# Clone this repository
-git clone <repository-url>
-
-# Go to project dir
-cd library-manager
-
-# Create the virtual environment (make sure you have Python 3.13 installed)
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run docker database service (make sure you have docker installed)
-docker compose up -d postgres
 
 # Run database migrations
 alembic upgrade head
