@@ -6,24 +6,25 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
 from api.db.models.user import User
+from api.core.exceptions import InvalidIdException
 
 
 logger = logging.getLogger(__name__)
 
 
 class UserCreationException(Exception):
-    def __init__(self, message: str = ""):
-        super().__init__(f"Failed to create user")
+    def __init__(self):
+        super().__init__("Failed to create user")
 
 
 class UserAlreadyExistsException(Exception):
-    def __init__(self, message: str = ""):
-        super().__init__(f"User already exists")
+    def __init__(self):
+        super().__init__("User already exists")
 
 
 class UserNotFoundException(Exception):
-    def __init__(self, message: str = ""):
-        super().__init__(f"User not found")
+    def __init__(self):
+        super().__init__("User not found")
 
 
 class UserService:
@@ -38,7 +39,7 @@ class UserService:
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
-            raise UserNotFoundException()
+            raise InvalidIdException()
 
         stmt = select(User).where(User.id == user_uuid)
         user = self._db.scalars(stmt).first()

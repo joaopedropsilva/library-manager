@@ -9,10 +9,10 @@ from api.services.book import \
     BookCreationException, \
     BookNotFoundException, \
     BookAlreadyExistsException
-from api.versions.v1.schema.book import BookCreate, BookRead
-from api.db.models.author import Author
-from api.versions.v1.dependencies.book import get_book_service, get_book_read_from_model
 from api.services.pagination import paginate_response, MemoryPaginatedResponse
+from api.db.models.author import Author
+from api.versions.v1.schema.book import BookCreate, BookRead
+from api.versions.v1.dependencies.book import get_book_service, get_book_read_from_model
 
 
 router = APIRouter()
@@ -31,8 +31,8 @@ def get_book_by_isbn(isbn: Annotated[ISBN, Path(description="Book identifier (IS
                      book_service: Annotated[BookService, Depends(get_book_service)]) -> BookRead:
     try:
         book = book_service.get_book_by_isbn(isbn)
-    except BookNotFoundException:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except BookNotFoundException as err:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
 
     return get_book_read_from_model(book)
 
@@ -52,7 +52,7 @@ def create_book(book: BookCreate,
                                                 book.synopsis,
                                                 authors)
         return get_book_read_from_model(created_book)
-    except BookCreationException:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except BookAlreadyExistsException:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+    except BookCreationException as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+    except BookAlreadyExistsException as err:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(err))

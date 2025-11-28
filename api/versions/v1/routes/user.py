@@ -3,14 +3,15 @@ from typing import Annotated
 from fastapi import \
     APIRouter, Depends, status, HTTPException, Query, Path
 
+from api.core.exceptions import InvalidIdException
 from api.services.user import \
     UserService, \
     UserCreationException, \
     UserAlreadyExistsException, \
     UserNotFoundException
+from api.services.pagination import paginate_response, MemoryPaginatedResponse
 from api.versions.v1.schema.user import UserCreate, UserRead
 from api.versions.v1.dependencies.user import get_user_service
-from api.services.pagination import paginate_response, MemoryPaginatedResponse
 
 
 router = APIRouter()
@@ -30,17 +31,19 @@ def create_user(user: UserCreate,
     try:
         created_user = service.create_user(user.name, user.phone, user.address, user.email)
         return UserRead(**created_user.asdict())
-    except UserCreationException:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except UserAlreadyExistsException:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+    except UserCreationException as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+    except UserAlreadyExistsException as err:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(err))
 
 
 @router.get("/users/{user_id}", status_code=status.HTTP_200_OK, response_model=UserRead)
 def get_user(user_id: Annotated[str, Path(description="User unique identifier (UUID4)")],
-             service: Annotated[str, Depends(get_user_service)]) -> UserRead:
+             service: Annotated[UserService, Depends(get_user_service)]) -> UserRead:
     try:
         user = service.get_user_by_id(user_id)
         return UserRead(**user.asdict())
-    except UserNotFoundException:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    except UserNotFoundException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+    except InvalidIdException as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))

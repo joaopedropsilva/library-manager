@@ -1,9 +1,11 @@
+import uuid
 import logging
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
+from api.core.exceptions import InvalidIdException
 from api.db.models.book import Book
 from api.db.models.author import Author
 
@@ -12,18 +14,23 @@ logger = logging.getLogger(__name__)
 
 
 class BookCreationException(Exception):
-    def __init__(self, message: str = ""):
+    def __init__(self):
         super().__init__(f"Failed to create book")
 
 
 class BookAlreadyExistsException(Exception):
-    def __init__(self, message: str = ""):
+    def __init__(self):
         super().__init__(f"Book already exists")
 
 
 class BookNotFoundException(Exception):
-    def __init__(self, message: str = ""):
+    def __init__(self):
         super().__init__(f"Book not found")
+
+
+class BookUnavailableException(Exception):
+    def __init__(self):
+        super().__init__(f"Book is not available")
 
 
 class BookService:
