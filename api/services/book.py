@@ -33,23 +33,15 @@ class BookService:
 
     def get_all_books(self) -> list[Book]:
         stmt = select(Book)
-
         return self._db.scalars(stmt).all()
 
-    def get_book_by_id(self, book_id: str) -> Book:
-        try:
-            book_uuid = uuid.UUID(book_id)
-        except ValueError:
-            raise BookNotFoundException()
-
-        stmt = select(Book).where(Book.id == book_uuid)
+    def get_book_by_isbn(self, isbn: str) -> Book:
+        stmt = select(Book).where(Book.isbn == isbn)
         book = self._db.scalars(stmt).first()
         if not book:
             raise BookNotFoundException()
 
-    def get_book_by_isbn(self, isbn: str) -> Book:
-        stmt = select(Book).where(Book.isbn == isbn)
-        return self._db.scalars(stmt).first()
+        return book
 
     def create_book(self,
                     title: str,
@@ -58,7 +50,8 @@ class BookService:
                     category: str,
                     synopsis: str,
                     authors: list[Author]) -> Book:
-        book = self.get_book_by_isbn(isbn)
+        stmt = select(Book).where(Book.isbn == isbn)
+        book = self._db.scalars(stmt).first()
         if book:
             raise BookAlreadyExistsException()
 
