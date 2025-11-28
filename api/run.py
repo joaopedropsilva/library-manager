@@ -1,5 +1,5 @@
-from contextlib import asynccontextmanager
 from api.core.log import setup_logger
+from api.db.models.models import *
 
 
 def setup_api(*, log_level_override: str = ""):
@@ -13,27 +13,17 @@ def setup_api(*, log_level_override: str = ""):
     # use the configured logger
     from fastapi import FastAPI
 
-    from api.db.session import setup_db
     from api.versions.v1.routes import user
     from api.versions.v1.routes import book
     from api.versions.v1.routes import loan
 
-
-    @asynccontextmanager
-    async def lifespan(app):
-        logger.debug("Starting API dependencies")
-        setup_db()
-        yield
-        logger.debug("Deactivating API dependencies")
-
-
-    app = FastAPI(title="library-manager", lifespan=lifespan)
+    app = FastAPI(title="library-manager")
 
     logger.debug("Created FastAPI instance")
 
-    app.include_router(user.router, prefix="/api/v1")
-    app.include_router(book.router, prefix="/api/v1")
-    app.include_router(loan.router, prefix="/api/v1")
+    app.include_router(user.router, prefix="/api/v1", tags=["Users"])
+    app.include_router(book.router, prefix="/api/v1", tags=["Books"])
+    app.include_router(loan.router, prefix="/api/v1", tags=["Loans"])
 
 
     @app.get("/")
