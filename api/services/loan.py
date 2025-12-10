@@ -97,9 +97,13 @@ class LoanService:
 
     def create_loan(self, book: Book, user: User) -> Loan:
         try:
-            loan = Loan(book_id=book.id, user_id=user.id)
+            due_date_delta = datetime.timedelta(days=settings.default_loan_term_in_days)
+            due_date = due_date_delta + datetime.datetime.now(datetime.timezone.utc)
+
+            loan = Loan(book_id=book.id, user_id=user.id, due_date=due_date)
             loan.book = book
             loan.user = user
+
             self._db.add(loan)
             self._db.commit()
             self._db.refresh(loan)

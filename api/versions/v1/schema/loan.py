@@ -4,25 +4,11 @@ import datetime
 from pydantic import BaseModel, Field
 
 
-class LoanCreate(BaseModel):
-    book_id: uuid.UUID
-    user_id: uuid.UUID
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "book_id": "292ada19-6b06-44f7-a20e-dc6687668b0e",
-                "user_id": "292ada19-6b06-44f7-a20e-dc6687668b0e"
-            }
-        }
-    }
-
-
-class LoanRead(LoanCreate):
+class LoanRead(BaseModel):
     id: uuid.UUID
     is_active: bool
     due_date: datetime.datetime
-    return_date: datetime.datetime
+    return_date: datetime.datetime | None
     fine: float = Field(ge=0)
     created_at: datetime.datetime
     updated_at: datetime.datetime
