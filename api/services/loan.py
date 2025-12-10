@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
 from api.core.config import settings
-from api.core.exceptions import InvalidIdException, UserMaxLoansExceededException
+from api.core.exceptions import UserMaxLoansExceededException
 from api.db.models.loan import Loan
 from api.db.models.book import Book
 from api.db.models.user import User
@@ -40,7 +40,7 @@ class LoanService:
         if active:
             stmt = select(Loan).where(Loan.is_active)
 
-        loans = self._db.scalars(stmt).all()
+        loans = list(self._db.scalars(stmt).all())
         if not overdue:
             return loans
 
@@ -56,26 +56,16 @@ class LoanService:
 
         return loans_overdue
 
-    def get_loans_by_user(self, user_id: str) -> list[Loan]:
-        try:
-            user_uuid = uuid.UUID(user_id)
-        except ValueError:
-            raise InvalidIdException()
-
-        stmt = select(Loan).where(Loan.user_id == user_uuid)
-        loans = self._db.scalars(stmt).all()
+    def get_loans_by_user(self, user_id: uuid.UUID) -> list[Loan]:
+        stmt = select(Loan).where(Loan.user_id == user_id)
+        loans = list(self._db.scalars(stmt).all())
         if not loans:
             raise LoanNotFoundException()
 
         return loans
 
-    def process_loan_return(self, loan_id: str) -> Loan:
-        try:
-            loan_uuid = uuid.UUID(loan_id)
-        except ValueError:
-            raise InvalidIdException()
-
-        stmt = select(Loan).where(Loan.id == loan_uuid)
+    def process_loan_return(self, loan_id: uuid.UUID) -> Loan:
+        stmt = select(Loan).where(Loan.id == loan_id)
         loan = self._db.scalars(stmt).first()
 
         if not loan:
@@ -98,7 +88,7 @@ class LoanService:
 
     def check_if_max_loans_exceeded(self, user: User) -> None:
         try:
-            loans = self.get_loans_by_user(str(user.id))
+            loans = self.get_loans_by_user(user.id)
         except LoanNotFoundException:
             return
 

@@ -5,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
-from api.core.exceptions import InvalidIdException
 from api.db.models.book import Book
 from api.db.models.author import Author
 
@@ -39,15 +38,10 @@ class BookService:
 
     def get_all_books(self) -> list[Book]:
         stmt = select(Book)
-        return self._db.scalars(stmt).all()
+        return list(self._db.scalars(stmt).all())
 
-    def get_if_book_available(self, book_id: str) -> Book:
-        try:
-            book_uuid = uuid.UUID(book_id)
-        except ValueError:
-            raise InvalidIdException()
-
-        stmt = select(Book).where(Book.id == book_uuid)
+    def get_if_book_available(self, book_id: uuid.UUID) -> Book:
+        stmt = select(Book).where(Book.id == book_id)
         book = self._db.scalars(stmt).first()
         if not book:
             raise BookNotFoundException()

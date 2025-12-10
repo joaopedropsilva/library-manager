@@ -13,7 +13,7 @@ client = TestClient(app)
 @pytest.mark.user
 def test_get_user_by_id(create_valid_user):
     response = client.get("/api/v1/users/invalid")
-    assert response.status_code == 404
+    assert response.status_code == 422
 
     response = client.get(f"/api/v1/users/{uuid.uuid4()}")
     assert response.status_code == 404

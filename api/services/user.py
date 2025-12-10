@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
 from api.db.models.user import User
-from api.core.exceptions import InvalidIdException
 
 
 logger = logging.getLogger(__name__)
@@ -33,15 +32,10 @@ class UserService:
 
     def get_all_users(self) -> list[User]:
         stmt = select(User)
-        return self._db.scalars(stmt).all()
+        return list(self._db.scalars(stmt).all())
 
-    def get_user_by_id(self, user_id: str) -> User:
-        try:
-            user_uuid = uuid.UUID(user_id)
-        except ValueError:
-            raise InvalidIdException()
-
-        stmt = select(User).where(User.id == user_uuid)
+    def get_user_by_id(self, user_id: uuid.UUID) -> User:
+        stmt = select(User).where(User.id == user_id)
         user = self._db.scalars(stmt).first()
         if not user:
             raise UserNotFoundException()
