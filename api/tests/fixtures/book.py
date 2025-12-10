@@ -1,4 +1,5 @@
 import random
+from typing import Callable
 
 import pytest
 
@@ -76,8 +77,8 @@ def _fake_isbn() -> str:
 
 
 @pytest.fixture
-def create_books(create_book):
-    def _create(amount):
+def fetch_random_book() -> Callable:
+    def _generate() -> dict:
         author_names = ["Guimarães", "Flaubert", "Michele", "Saramago", "Fernando"]
         author_descs = ["desc01", "desc02"]
         titles = ["Campo Geral", "Harry Potter", "Essencialismo"]
@@ -85,18 +86,29 @@ def create_books(create_book):
         categories = ["cat01", "cat02"]
         synopsis = ["syn01", "syn02"]
 
+        return {
+            "title": random.choice(titles),
+            "publisher": random.choice(publishers),
+            "isbn": _fake_isbn(),
+            "category": random.choice(categories),
+            "synopsis": random.choice(synopsis),
+            "authors": [{
+                "name": random.choice(author_names),
+                "description": random.choice(author_descs)
+            }]
+        }
+
+    return _generate
+
+
+@pytest.fixture
+def create_books(create_book, fetch_random_book):
+    def _create(amount) -> list[BookRead]:
+
+        books = []
         for _ in range(amount):
-            book = {
-                "title": random.choice(titles),
-                "publisher": random.choice(publishers),
-                "isbn": _fake_isbn(),
-                "category": random.choice(categories),
-                "synopsis": random.choice(synopsis),
-                "authors": [{
-                    "name": random.choice(author_names),
-                    "description": random.choice(author_descs)
-                }]
-            }
-            create_book(book)
+            books.append(create_book(fetch_random_book()))
+
+        return books
 
     return _create
