@@ -1,7 +1,7 @@
 import uuid
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError 
 
@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 class BookCreationException(Exception):
     def __init__(self):
         super().__init__(f"Failed to create book")
+
+
+class BookUpdateException(Exception):
+    def __init__(self):
+        super().__init__(f"Failed to update book")
 
 
 class BookAlreadyExistsException(Exception):
@@ -58,6 +63,15 @@ class BookService:
             raise BookNotFoundException()
 
         return book
+
+    def update_book_status(self, book_id: uuid.UUID, new_status: bool) -> None:
+        try:
+            stmt = update(Book).where(Book.id == book_id).values(is_available=new_status)
+            self._db.execute(stmt)
+            self._db.commit()
+        except SQLAlchemyError:
+            logger.exception("Database failed to update book status")
+            raise BookUpdateException()
 
     def create_book(self,
                     title: str,

@@ -10,7 +10,7 @@ from api.services.loan import \
     LoanService, LoanCreationException, LoanNotFoundException, LoanReturnProcessException
 from api.services.user import UserService, UserNotFoundException
 from api.services.book import \
-        BookService, BookNotFoundException, BookUnavailableException
+        BookService, BookUpdateException, BookNotFoundException, BookUnavailableException
 from api.versions.v1.schema.loan import LoanRead
 from api.versions.v1.dependencies.user import get_user_service
 from api.versions.v1.dependencies.book import get_book_service
@@ -60,9 +60,15 @@ def create_loan(book_id: Annotated[UUID,
 
     try:
         created_loan = loan_service.create_loan(book, user)
-        return LoanRead(**created_loan.asdict())
     except LoanCreationException as err:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+
+    try:
+        book_service.update_book_status(created_loan.book_id, False)
+    except BookUpdateException as err:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(err))
+
+    return LoanRead(**created_loan.asdict())
 
 
 @router.post("/loans/return/{loan_id}", status_code=status.HTTP_200_OK, response_model=LoanRead)
