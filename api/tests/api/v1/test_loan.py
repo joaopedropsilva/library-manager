@@ -10,6 +10,38 @@ client = TestClient(app)
 
 
 @pytest.mark.loan
+def test_get_loans_paginated(create_loans):
+    response = client.get("/api/v1/loans/")
+    assert response.status_code == 200
+    pagination_result = response.json()
+    assert "total_items" in pagination_result
+    assert "page_items" in pagination_result
+    assert "page" in pagination_result
+    assert "total_pages" in pagination_result
+    assert pagination_result["total_items"] == 0
+
+    skip=-1
+    limit=5
+    response = client.get(f"/api/v1/books/?skip={skip}&limit={limit}")
+    assert response.status_code == 422
+    skip=0
+    limit=-1
+    response = client.get(f"/api/v1/books/?skip={skip}&limit={limit}")
+    assert response.status_code == 422
+
+    insert_amount = 20
+    create_loans(insert_amount)
+    skip=0
+    limit=5
+    page_expected = skip // limit
+    response = client.get(f"/api/v1/books/?skip={skip}&limit={limit}")
+    pagination_result = response.json()
+    assert pagination_result["total_items"] == insert_amount
+    assert len(pagination_result["page_items"]) == limit
+    assert pagination_result["page"] == page_expected
+
+
+@pytest.mark.loan
 def test_create_loan(loan_create, create_loans):
     invalid_uuid = "invalid"
     response = client.post(f"/api/v1/loans/?book_id={invalid_uuid}&user_id={invalid_uuid}")

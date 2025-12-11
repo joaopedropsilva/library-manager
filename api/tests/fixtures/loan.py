@@ -29,7 +29,7 @@ def loan_create(callable_loan_create) -> tuple[BookRead, UserRead]:
 
 @pytest.fixture
 def create_loan(db_session, callable_loan_create) -> Callable:
-    def _create(book: dict = None, default_user_read: UserRead = None) -> LoanRead:
+    def _create(book: dict = None, default_user_read: UserRead = None) -> tuple[LoanRead, UserRead | None]:
         book_read, user_read = callable_loan_create(book, default_user_read)
 
         due_date_delta = datetime.timedelta(days=settings.default_loan_term_in_days)
@@ -40,7 +40,7 @@ def create_loan(db_session, callable_loan_create) -> Callable:
         db_session.commit()
         db_session.refresh(loan_model)
 
-        return LoanRead(**loan_model.asdict())
+        return LoanRead(**loan_model.asdict()), user_read
 
     return _create
 
@@ -52,11 +52,11 @@ def create_loans(create_loan, fetch_random_book) -> Callable:
         user_read = default_user_read
         for _ in range(loan_amount):
             random_book = fetch_random_book()
-            loan = create_loan(random_book, user_read)
+            loan_read, user_read_from_loan = create_loan(random_book, user_read)
             if not user_read:
-                user_read = loan.user_read
+                user_read = user_read_from_loan
 
-            loans.append(loan)
+            loans.append(loan_read)
 
         return loans
 
